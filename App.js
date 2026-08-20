@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
-import { View } from 'react-native';
+import { View, Platform, StyleSheet } from 'react-native';
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 
 import LandingScreen from './src/screens/LandingScreen';
@@ -76,11 +76,38 @@ export default function App() {
 
   if (!fontsLoaded) return <View style={{ flex: 1, backgroundColor: '#fff' }} />;
 
+  // 웹: 데스크톱 전체화면에서 늘어나 잘리지 않도록 모바일 고정 폭(휴대폰 프레임)으로 가운데 정렬.
+  // 네이티브: 그대로 전체 화면 사용.
+  const app = <RootNavigator />;
+
   return (
     <AuthProvider>
       <SafeAreaProvider>
-        <RootNavigator />
+        {Platform.OS === 'web' ? (
+          <View style={styles.webShell}>
+            <View style={styles.webFrame}>{app}</View>
+          </View>
+        ) : (
+          app
+        )}
       </SafeAreaProvider>
     </AuthProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  webShell: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E5E7EB', // 프레임 바깥 여백(회색)
+  },
+  webFrame: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 430,          // 휴대폰 폭 고정
+    alignSelf: 'center',
+    backgroundColor: '#fff',
+    overflow: 'hidden',
+  },
+});
